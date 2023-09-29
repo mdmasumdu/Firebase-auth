@@ -1,12 +1,14 @@
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 import { useState } from "react";
 import auth from "../../Firebase.config";
+import { FaEye,FaEyeSlash} from 'react-icons/fa';
 
 
 const Registration = () => {
 
     const [succes,setSucces] =useState('');
     const [errora,setErrora] = useState('')
+    const [show,setShow] = useState(false)
  
 
 
@@ -14,11 +16,12 @@ const Registration = () => {
         e.preventDefault()
         const email = e.target.email.value;
         const password= e.target.password.value;
+        const name= e.target.text.value;
 
         setErrora('')
         setSucces('')
 
-        console.log(email,password)
+        console.log(email,password,name)
         if(password.length<6){
             setErrora('Password should at least 6 character')
             return;
@@ -37,7 +40,14 @@ const Registration = () => {
         createUserWithEmailAndPassword(auth,email,password)
         .then(result=>{
             
-            console.log(result)
+
+            // update profile
+            updateProfile(result.user,{
+                displayName:name,
+                photoURL: "https://example.com/jane-q-user/profile.jpg"
+            })
+
+            // send email verification
             sendEmailVerification(result.user)
             .then(()=> alert('Email verification sent'))
             .catch((error)=> console.log(error))
@@ -70,7 +80,12 @@ const Registration = () => {
             <form onSubmit={regHandler}>
                 <input type="email" name="email" id="" placeholder="Your Email" className=" p-2 md:w-96" required />
                 <br />
-                <input type="password" name="password" id="" placeholder="Password" className="my-5 p-2 md:w-96" required />
+                <input type="text" name="text" id="" placeholder="Your Name" className=" p-2 md:w-96 mt-5" required />
+                <br />
+                <div>
+                <input type={show ? "password": 'text'} name="password" id="" placeholder="Password" className="my-5 p-2 md:w-96 relative" required />
+                <span className="absolute mt-8 -ml-6" onClick={()=>setShow(!show)}> {show ?<FaEye></FaEye>:<FaEyeSlash></FaEyeSlash> }</span>
+                </div>
                 <br />
                 <input type="submit" value="Submit"  className=" btn btn-secondary p-2 md:w-96"/>
 
